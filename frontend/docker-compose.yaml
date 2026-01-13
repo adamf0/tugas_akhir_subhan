@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://example.com
+        VITE_NODE_ENV: production
+    container_name: frontend
+    image: frontend:0.1.0
+    restart: always
+    security_opt:
+      - "no-new-privileges:true"
+      - apparmor=docker-default
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=https://example.com
+      - VITE_NODE_ENV=production
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
