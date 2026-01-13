@@ -13,6 +13,11 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
+const API_URL =
+  import.meta.env.VITE_NODE_ENV === "development" || import.meta.env.VITE_NODE_ENV === null || import.meta.env.VITE_NODE_ENV === undefined
+    ? "http://localhost:3000"
+    : "";
+
 export default function Site() {
   const [siteData, setSiteData] = useState([]);
   const [selectedSite, setSelectedSite] = useState(null);
@@ -28,14 +33,14 @@ export default function Site() {
     setLoading(true);
     try {
       // Ambil registry sites
-      const resRegis = await fetch("http://localhost:3000/registry");
+      const resRegis = await fetch(`${API_URL}/registry`);
       const dataRegis = await resRegis.json();
 
       // Ambil sitemap untuk setiap site
       const promises = dataRegis.map(async (regis) => {
         try {
           const resSitemap = await fetch(
-            `http://localhost:3000/sitemaps?site_url=${encodeURIComponent(
+            `${API_URL}/sitemaps?site_url=${encodeURIComponent(
               regis.siteUrl
             )}`
           );
@@ -63,7 +68,7 @@ export default function Site() {
     setLoadingDelete(true);
     try {
       const res = await fetch(
-        `http://localhost:3000/delete?url=${encodeURIComponent(deleteTarget)}`
+        `${API_URL}/delete?url=${encodeURIComponent(deleteTarget)}`
       );
       const data = await res.json();
 

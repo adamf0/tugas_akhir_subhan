@@ -10,3 +10,45 @@ services:
       - .:/usr/src/app
     environment:
       - NODE_ENV=development
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: sitemap-node
+    ports:
+      - "4000:3000" # optional, internal testing
+    networks:
+      - app-network
+    environment:
+      - NODE_ENV=development
+
+  frontend:
+    build:
+      context: frontend/.
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://nginx # nanti nginx reverse ke backend
+        VITE_NODE_ENV: production
+    container_name: frontend
+    image: frontend:0.1.0
+    restart: always
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+      - frontend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
