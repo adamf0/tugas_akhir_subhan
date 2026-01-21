@@ -3,6 +3,7 @@ import Home from "./Page/Home";
 import Site from "./Page/Site";
 import About from "./Page/About";
 import Navbar from "./Components/Navbar";
+import Removal from "./Page/Removal";
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/site" element={<Site />} />
+            <Route path="/removal" element={<Removal />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </div>

@@ -4,6 +4,22 @@ import fetch from "node-fetch";
 import { parseStringPromise } from "xml2js";
 import pLimit from "p-limit";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+import multer from "multer";
+import fs from "fs/promises";
+import fsSync from "fs";
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // optional: max 5MB
+  },
+});
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
@@ -12,6 +28,30 @@ app.use(cors({
   methods: ["GET","POST","PUT","DELETE","OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+const LOG_FILE = path.join(__dirname, "deleted-urls.json");
+
+function logDeletedUrl(url) {
+  const now = new Date().toISOString();
+
+  let logs = [];
+
+  if (fsSync.existsSync(LOG_FILE)) {
+    try {
+      const raw = fsSync.readFileSync(LOG_FILE, "utf8");
+      logs = JSON.parse(raw || "[]");
+    } catch {
+      logs = [];
+    }
+  }
+
+  logs.push({
+    url,
+    datetime: now,
+  });
+
+  fsSync.writeFileSync(LOG_FILE, JSON.stringify(logs, null, 2));
+}
 
 // ================= CONFIG =================
 const PORT = 3000;
@@ -212,6 +252,7 @@ app.get("/delete", async (req, res) => {
     }
 
     await deleteIndex(url);
+    logDeletedUrl(url);
 
     res.json({
       url,
@@ -222,6 +263,63 @@ app.get("/delete", async (req, res) => {
       url,
       status: "FAILED",
       error: e.response?.data || e.message,
+    });
+  }
+});
+
+app.post("/upload-sitemap", upload.single("sitemap"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "File tidak ditemukan" });
+    }
+
+    // Ambil XML langsung dari memory
+    const xml = req.file.buffer.toString("utf8");
+
+    const parsed = await parseStringPromise(xml, {
+      trim: true,
+      strict: true,
+    });
+
+    const urls =
+      parsed?.urlset?.url
+        ?.map((u) => u.loc?.[0])
+        .filter(Boolean) ?? [];
+
+    res.json({
+      total: urls.length,
+      data: urls,
+    });
+  } catch (err) {
+    console.error("UPLOAD SITEMAP ERROR:", err.message);
+    res.status(500).json({
+      error: "Gagal parse sitemap",
+      message: err.message,
+    });
+  }
+});
+
+
+app.get("/logs", (req, res) => {
+  try {
+    if (!fsSync.existsSync(LOG_FILE)) { // error: fs.existsSync is not a function
+      return res.json({
+        total: 0,
+        data: [],
+      });
+    }
+
+    const raw = fsSync.readFileSync(LOG_FILE, "utf8");
+    const data = JSON.parse(raw || "[]");
+
+    res.json({
+      total: data.length,
+      data,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: "Gagal membaca log",
+      message: err.message,
     });
   }
 });
