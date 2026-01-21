@@ -14,7 +14,7 @@ version: "3.9"
 
 services:
   app:
-    build: .
+    build: backend/.
     container_name: sitemap-node
     ports:
       - "4000:3000" # optional, internal testing

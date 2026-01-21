@@ -18,7 +18,7 @@ export default function Navbar() {
         <NavLink to="/site" className={linkClass}>
           Site
         </NavLink>
-        <NavLink to="/romoval" className={linkClass}>
+        <NavLink to="/removal" className={linkClass}>
           Removal Judol
         </NavLink>
         <NavLink to="/about" className={linkClass}>
