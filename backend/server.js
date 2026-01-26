@@ -190,6 +190,7 @@ function isValidUrl(url) {
 
 // ================= ROUTES =================
 
+// ================= PEMBACAAN TERDAFTARNYA WEB PADA GSC =================
 /**
  * GET /registry
  * List semua property Search Console
@@ -203,6 +204,7 @@ app.get("/registry", async (req, res) => {
   }
 });
 
+// ================= PEMBACAAN SITEMAP YG TERDAFTAR PADA GSC =================
 /**
  * GET /sitemaps
  * List sitemap + isi URL-nya
@@ -229,6 +231,7 @@ app.get("/sitemaps", async (req, res) => {
   }
 });
 
+// ================= PENGHAPUSAN LINK SITEMAP (BULK REMOVAL) =================
 /**
  * GET /delete?url=...&dryRun=true
  * Hapus URL dari Google Index (BUKAN dari sitemap.xml)
@@ -267,6 +270,7 @@ app.get("/delete", async (req, res) => {
   }
 });
 
+// ================= MENDAPATKAN DATA URL SITEMAP (BULK REMOVAL) =================
 app.post("/upload-sitemap", upload.single("sitemap"), async (req, res) => {
   try {
     if (!req.file) {
@@ -299,7 +303,7 @@ app.post("/upload-sitemap", upload.single("sitemap"), async (req, res) => {
   }
 });
 
-
+// ================= FITUR HISTORY PENGHAPUSAN URL =================
 app.get("/logs", (req, res) => {
   try {
     if (!fsSync.existsSync(LOG_FILE)) { // error: fs.existsSync is not a function
